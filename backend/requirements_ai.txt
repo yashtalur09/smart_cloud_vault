@@ -1,0 +1,5 @@
+# AI/NLP packages - install separately
+spacy>=3.7.0
+spacy-transformers
+transformers>=4.30.0
+torch

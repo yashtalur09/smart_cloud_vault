@@ -1,0 +1,23 @@
+Employee Information - CONFIDENTIAL
+
+Employee Name: John Smith
+Email: john.smith@company.com
+Phone: (555) 123-4567
+Employee ID: EMP-2024-001
+
+Department: Human Resources
+Position: HR Manager
+Hire Date: January 15, 2023
+
+Contact Information:
+Personal Email: johnsmith@email.com
+Mobile: 555-987-6543
+Emergency Contact: Jane Smith - (555) 234-5678
+
+Social Security Number: 123-45-6789
+
+Address:
+123 Main Street
+Springfield, IL 62701
+
+This document contains personal identifiable information (PII) and must be handled according to company privacy policy.

@@ -1,0 +1,27 @@
+# Stage 1: Web framework and basic utilities
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+python-multipart==0.0.6
+python-dotenv==1.0.0
+aiofiles==23.2.1
+
+# Stage 2: Data validation (older version with pre-built wheels)
+pydantic==2.4.2
+pydantic-settings==2.0.3
+
+# Stage 3: Database
+motor==3.3.2
+
+# Stage 4: Authentication  
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+
+# Stage 5: File processing
+PyPDF2==3.0.1
+python-docx==1.1.0
+
+# Stage 6: Security
+cryptography==41.0.7
+
+# Stage 7: Reporting
+reportlab==4.0.9
