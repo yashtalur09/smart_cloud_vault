@@ -205,15 +205,22 @@ async def employee_access_file(
         if not stored_employee_id:
             raise HTTPException(status_code=400, detail="File does not have employee information")
         
+        # Log the comparison for debugging
+        logger.debug(f"Validating employee access - Request: id={request.employee_id}, name={request.employee_name}, email={request.employee_email}")
+        logger.debug(f"Stored in DB: id={stored_employee_id}, name={stored_employee_name}, email={stored_employee_email}")
+        
         # Strict validation: all fields must match
         if request.employee_id != stored_employee_id:
-            raise HTTPException(status_code=403, detail="Employee ID does not match file records")
+            logger.warning(f"Employee ID mismatch: '{request.employee_id}' != '{stored_employee_id}'")
+            raise HTTPException(status_code=403, detail=f"Employee ID does not match file records. Provided: '{request.employee_id}', Expected: '{stored_employee_id}'")
         
         if request.employee_name.lower() != stored_employee_name.lower():
-            raise HTTPException(status_code=403, detail="Employee name does not match file records")
+            logger.warning(f"Employee name mismatch: '{request.employee_name}' != '{stored_employee_name}'")
+            raise HTTPException(status_code=403, detail=f"Employee name does not match file records. Provided: '{request.employee_name}', Expected: '{stored_employee_name}'")
         
         if request.employee_email.lower() != stored_employee_email.lower():
-            raise HTTPException(status_code=403, detail="Employee email does not match file records")
+            logger.warning(f"Employee email mismatch: '{request.employee_email}' != '{stored_employee_email}'")
+            raise HTTPException(status_code=403, detail=f"Employee email does not match file records. Provided: '{request.employee_email}', Expected: '{stored_employee_email}'")
         
         logger.info(f"Employee access granted: {request.employee_id} accessing their own file {request.file_id}")
         
@@ -311,13 +318,9 @@ async def authority_access_file(
         file_content = await storage_manager.get_masked(request.file_id, storage_key)
         
         if not file_content:
-            # Fallback to original if masked not available (should not happen in production)
-            logger.warning(f"Masked file not found for {request.file_id}, falling back to original")
-            storage_key = file_doc.get("original_s3_key") if storage_type == "s3" else None
-            file_content = await storage_manager.get_original(request.file_id, storage_key)
-        
-        if not file_content:
-            raise HTTPException(status_code=404, detail="File not found")
+            # Do NOT fallback to original - authority should only access masked files
+            logger.error(f"Masked file not found for {request.file_id} - this should not happen")
+            raise HTTPException(status_code=404, detail="Masked file not found. File may not have been processed correctly.")
         
         original_filename = file_doc.get("original_filename", "file")
         source_type = file_doc.get("source_type", "text")

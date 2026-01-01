@@ -325,11 +325,14 @@ async def _scan_file(file_id: str, company: str, db: AsyncIOMotorDatabase):
                 filename_base = original_filename.rsplit('.', 1)[0] if '.' in original_filename else original_filename
                 txt_filename = f"{filename_base}.txt"
                 
+                # Use employee_id for folder structure in S3
+                employee_id = file_doc.get('employee_id', '')
+                
                 storage_result = await storage_manager.save_original(
                     file_content=original_text_content,
                     file_id=file_id,
                     filename=txt_filename,
-                    company=company
+                    company=employee_id
                 )
                 
                 # Update S3 key in metadata
@@ -346,11 +349,21 @@ async def _scan_file(file_id: str, company: str, db: AsyncIOMotorDatabase):
         masked_content = masked_text.encode('utf-8')
         
         original_filename = file_doc.get('original_filename', '')
+        # Use employee_id for folder structure in S3
+        employee_id = file_doc.get('employee_id', '')
+        
+        # For images (OCR files), masked file should be .txt, not .jpg
+        if is_image:
+            filename_base = original_filename.rsplit('.', 1)[0] if '.' in original_filename else original_filename
+            masked_filename = f"{filename_base}.txt"
+        else:
+            masked_filename = original_filename
+        
         storage_result = await storage_manager.save_masked(
             file_content=masked_content,
             file_id=file_id,
-            filename=original_filename,
-            company=company
+            filename=masked_filename,
+            company=employee_id
         )
         
         masked_path = storage_result.get('s3_key') or storage_result.get('path', '')
