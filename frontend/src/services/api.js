@@ -13,7 +13,17 @@ const api = axios.create({
 });
 
 // File Upload
-export const uploadFile = async (file, company, department, uploaderEmail, uploaderName = '') => {
+export const uploadFile = async (
+    file, 
+    company, 
+    department, 
+    uploaderEmail, 
+    uploaderName = '', 
+    employeeId, 
+    employeeName, 
+    employeeEmail, 
+    documentName = ''
+) => {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('company', company);
@@ -21,6 +31,12 @@ export const uploadFile = async (file, company, department, uploaderEmail, uploa
     formData.append('uploader_email', uploaderEmail);
     if (uploaderName) {
         formData.append('uploader_name', uploaderName);
+    }
+    formData.append('employee_id', employeeId);
+    formData.append('employee_name', employeeName);
+    formData.append('employee_email', employeeEmail);
+    if (documentName) {
+        formData.append('document_name', documentName);
     }
 
     const response = await api.post('/api/upload', formData, {
@@ -85,6 +101,79 @@ export const accessFile = async (fileId, requesterEmail) => {
 // Get file info without downloading
 export const getFileInfo = async (fileId) => {
     const response = await api.get(`/api/files/info/${fileId}`);
+    return response.data;
+};
+
+// Employee accesses their own file (original version)
+export const employeeAccessFile = async (employeeId, employeeName, employeeEmail, fileId) => {
+    const response = await api.post('/api/files/employee/access', {
+        employee_id: employeeId,
+        employee_name: employeeName,
+        employee_email: employeeEmail,
+        file_id: fileId
+    }, {
+        responseType: 'blob',
+    });
+
+    // Get filename from headers
+    const contentDisposition = response.headers['content-disposition'];
+    let filename = 'download';
+    if (contentDisposition) {
+        const matches = /filename="(.+)"/.exec(contentDisposition);
+        if (matches && matches[1]) {
+            filename = matches[1];
+        }
+    }
+
+    // Create download link
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', filename);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+
+    return { filename };
+};
+
+// Authority accesses employee file (masked version)
+export const authorityAccessFile = async (name, email, role, employeeId, fileId) => {
+    const response = await api.post('/api/files/authority/access', {
+        name: name,
+        email: email,
+        role: role,
+        employee_id: employeeId,
+        file_id: fileId
+    }, {
+        responseType: 'blob',
+    });
+
+    // Get filename from headers
+    const contentDisposition = response.headers['content-disposition'];
+    let filename = 'download';
+    if (contentDisposition) {
+        const matches = /filename="(.+)"/.exec(contentDisposition);
+        if (matches && matches[1]) {
+            filename = matches[1];
+        }
+    }
+
+    // Create download link
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', filename);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+
+    return { filename };
+};
+
+// List employee files
+export const listEmployeeFiles = async (employeeId) => {
+    const response = await api.get(`/api/files/employee/files/${employeeId}`);
     return response.data;
 };
 

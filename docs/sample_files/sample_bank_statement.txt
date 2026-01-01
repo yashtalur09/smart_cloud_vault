@@ -1,0 +1,78 @@
+BANK STATEMENT
+
+First National Bank
+1000 Financial Center Drive
+Chicago, IL 60601
+1-800-555-BANK
+
+STATEMENT PERIOD: November 1, 2024 - November 30, 2024
+
+Account Holder: David Martinez
+Account Number: 9876543210123456
+Routing Number: 071000013
+Account Type: Business Checking
+
+Mailing Address:
+456 Oak Street
+Apartment 12
+Chicago, IL 60614
+
+Contact Information:
+Phone: (312) 555-0178
+Email: david.martinez@email.com
+
+ACCOUNT SUMMARY
+---------------------------------------------------------------
+Beginning Balance (11/01/2024):              $45,678.90
+Total Deposits:                              $28,450.00
+Total Withdrawals:                           $19,234.56
+Total Fees:                                  $25.00
+Ending Balance (11/30/2024):                 $54,869.34
+
+AVAILABLE CREDIT LINE:                       $50,000.00
+
+TRANSACTION HISTORY
+---------------------------------------------------------------
+Date        Description                    Withdrawal    Deposit
+---------------------------------------------------------------
+11/01       Beginning Balance                           $45,678.90
+11/02       Direct Deposit - Payroll                    $5,500.00
+11/03       Check #1234                    $1,200.00
+11/05       ACH Payment - Rent             $2,500.00
+11/07       ATM Withdrawal                 $200.00
+11/08       Debit Card - Groceries         $156.78
+11/10       Wire Transfer - Invoice        $8,950.00
+11/12       Mobile Deposit                              $3,250.00
+11/15       Direct Deposit - Payroll                    $5,500.00
+11/17       Online Bill Pay - Utilities    $345.67
+11/18       Debit Card - Gas Station       $89.45
+11/20       Check #1235                    $3,500.00
+11/22       Merchant Payment               $2,345.89
+11/25       Wire Transfer Received                      $12,500.00
+11/28       ATM Withdrawal                 $300.00
+11/30       Monthly Maintenance Fee        $25.00
+11/30       Interest Earned                             $1,700.00
+---------------------------------------------------------------
+
+YEAR-TO-DATE SUMMARY
+Total Interest Earned:                       $18,750.45
+Total Fees Paid:                             $275.00
+
+TAX INFORMATION
+Federal Tax ID: 98-7654321
+
+IMPORTANT NOTICES:
+- Your account is currently in good standing
+- Online banking is available 24/7 at www.firstnationalbank.com
+- Set up automatic bill pay to avoid late fees
+- FDIC Insured up to $250,000
+
+For questions or concerns, please contact:
+Customer Service: 1-800-555-2265
+Online: www.firstnationalbank.com/support
+Branch: (312) 555-0100
+
+Please review this statement carefully and report any errors within 30 days.
+
+Account Security Reminder:
+Never share your account number, PIN, or online banking password with anyone.

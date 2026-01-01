@@ -1,6 +1,6 @@
 """Configuration management for SmartCloud Vault."""
 from pydantic_settings import BaseSettings
-from typing import List
+from typing import List, Optional
 import os
 
 
@@ -29,6 +29,14 @@ class Settings(BaseSettings):
     debug: bool = True
     cors_origins: str = "http://localhost:5173,http://localhost:3000"
     max_file_size: int = 10485760  # 10MB
+    
+    # AWS S3 Configuration
+    use_s3_storage: bool = False  # Set to True to use S3, False for local storage
+    aws_access_key_id: Optional[str] = None
+    aws_secret_access_key: Optional[str] = None
+    aws_region: str = "us-east-1"
+    s3_original_bucket: str = "smartcloud-vault-original"
+    s3_masked_bucket: str = "smartcloud-vault-masked"
     
     class Config:
         env_file = ".env"

@@ -3,7 +3,15 @@ from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
 from pymongo import MongoClient
 from typing import Optional
 import logging
+import ssl
 from config import settings
+
+# Try to use certifi for SSL certificates (handles Windows SSL issues)
+try:
+    import certifi
+    CA_CERTS = certifi.where()
+except ImportError:
+    CA_CERTS = None
 
 logger = logging.getLogger(__name__)
 
@@ -18,18 +26,54 @@ class Database:
     async def connect_db(cls):
         """Connect to MongoDB."""
         try:
-            cls.client = AsyncIOMotorClient(settings.mongodb_url)
+            # Configure connection based on URL type
+            connection_kwargs = {}
+            
+            # If using MongoDB Atlas, try SSL configuration
+            if ("mongodb+srv://" in settings.mongodb_url or 
+                "mongodb.net" in settings.mongodb_url):
+                
+                logger.info("Detected MongoDB Atlas connection")
+                
+                if CA_CERTS:
+                    connection_kwargs['tlsCAFile'] = CA_CERTS
+                    logger.info(f"Using certifi CA certificates: {CA_CERTS}")
+                
+                # Add TLS settings to help with OpenSSL compatibility
+                connection_kwargs['tls'] = True
+                connection_kwargs['tlsAllowInvalidCertificates'] = True  # For older OpenSSL
+                connection_kwargs['tlsAllowInvalidHostnames'] = True     # For older OpenSSL
+                
+                logger.warning(
+                    "Using TLS with relaxed certificate validation. "
+                    "If connection fails, consider:\n"
+                    "  1. Installing MongoDB locally (mongodb://localhost:27017)\n"
+                    "  2. Upgrading to Python 3.11+ (includes newer OpenSSL)\n"
+                    "  See MONGODB_CONNECTION_FIX.md for details."
+                )
+            else:
+                logger.info("Using local MongoDB connection (no SSL required)")
+            
+            cls.client = AsyncIOMotorClient(settings.mongodb_url, **connection_kwargs)
             cls.db = cls.client[settings.mongodb_db_name]
             
             # Test connection
             await cls.client.admin.command('ping')
-            logger.info(f"Connected to MongoDB: {settings.mongodb_db_name}")
+            logger.info(f"✅ Connected to MongoDB: {settings.mongodb_db_name}")
             
             # Create indexes
             await cls.create_indexes()
             
         except Exception as e:
-            logger.error(f"Failed to connect to MongoDB: {e}")
+            logger.error(f"❌ Failed to connect to MongoDB: {e}")
+            logger.error(
+                "\n=== TROUBLESHOOTING ===\n"
+                "If using MongoDB Atlas and getting SSL errors:\n"
+                "  • Your Python's OpenSSL may be too old\n"
+                "  • Quick fix: Install MongoDB locally\n"
+                "  • See: MONGODB_CONNECTION_FIX.md\n"
+                "======================="
+            )
             raise
     
     @classmethod

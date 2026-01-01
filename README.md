@@ -10,11 +10,22 @@ A comprehensive, AI-powered local application for detecting, classifying, and pr
 
 ### Core Functionality
 - **🤖 AI-Powered Detection**: Dual-layer detection using regex patterns and ML models (spaCy + HuggingFace Transformers)
+- **🖼️ Image OCR Support**: Extract text from images (JPG, JPEG, PNG) using Tesseract OCR
 - **📊 Automatic Classification**: Files categorized into Public, Internal, Confidential, or Restricted levels
 - **🛡️ Data Protection**: Masking and encryption capabilities for sensitive information
+- **📧 Email-Based Access Control**: Original files for uploaders, masked files for others
+- **☁️ AWS S3 Storage**: Dual-bucket cloud storage with local fallback (NEW!)
 - **📈 Advanced Analytics**: Company and department-level data analysis with risk scoring
 - **💡 AI Recommendations**: Intelligent security policy suggestions based on data patterns
 - **📄 Compliance Reports**: Professional PDF reports with charts, tables, and actionable insights
+
+### Storage Options
+- **Local Storage**: Traditional filesystem storage (default)
+- **AWS S3**: Scalable cloud storage with dual-bucket architecture
+  - Separate buckets for original and masked documents
+  - Server-side encryption (AES-256)
+  - Company-based file organization
+  - Seamless switching between local and cloud
 
 ### Detection Capabilities
 - **Regex-Based**:
@@ -54,7 +65,11 @@ smartcloud-vault/
 │   ├── reports/            # PDF report generation
 │   ├── storage/            # Data storage
 │   │   ├── database.py     # MongoDB operations
-│   │   └── file_storage.py # Local file management
+│   │   ├── file_storage.py # Local file management
+│   │   ├── storage_interface.py  # Storage abstraction
+│   │   ├── local_storage.py      # Local storage backend
+│   │   ├── s3_storage.py         # AWS S3 backend (NEW!)
+│   │   └── storage_factory.py    # Storage initialization
 │   ├── models/             # Pydantic schemas
 │   └── utils/              # Helper utilities
 │
@@ -101,6 +116,46 @@ brew install mongodb-community
 brew services start mongodb-community
 ```
 
+#### Tesseract OCR (Required for Image Upload Feature)
+
+**Windows:**
+1. Download the Tesseract installer from: https://github.com/UB-Mannheim/tesseract/wiki
+2. Run the installer (recommended: `tesseract-ocr-w64-setup-5.3.x.exe`)
+3. During installation, note the installation path (default: `C:\Program Files\Tesseract-OCR`)
+4. Add Tesseract to your system PATH:
+   - Right-click "This PC" → Properties → Advanced system settings
+   - Click "Environment Variables"
+   - Under "System variables", find "Path" and click "Edit"
+   - Click "New" and add: `C:\Program Files\Tesseract-OCR`
+   - Click OK to save
+5. Verify installation:
+   ```bash
+   tesseract --version
+   ```
+
+**Alternative (if PATH not set):**
+Set the `TESSERACT_CMD` environment variable in your `.env` file:
+```env
+TESSERACT_CMD=C:\Program Files\Tesseract-OCR\tesseract.exe
+```
+
+**Linux:**
+```bash
+# Ubuntu/Debian
+sudo apt-get install tesseract-ocr
+
+# Verify
+tesseract --version
+```
+
+**Mac:**
+```bash
+brew install tesseract
+
+# Verify
+tesseract --version
+```
+
 ---
 
 ## 🚀 Installation & Setup
@@ -134,6 +189,22 @@ python -m spacy download en_core_web_sm
 copy .env.example .env
 
 # Edit .env if needed (MongoDB connection, etc.)
+```
+
+**Optional: Enable AWS S3 Storage**
+
+To use cloud storage instead of local files:
+
+```bash
+# See QUICK_START_S3.md for complete instructions
+
+# Edit .env:
+USE_S3_STORAGE=true
+AWS_ACCESS_KEY_ID=your-key
+AWS_SECRET_ACCESS_KEY=your-secret
+AWS_REGION=us-east-1
+S3_ORIGINAL_BUCKET=smartcloud-vault-original
+S3_MASKED_BUCKET=smartcloud-vault-masked
 ```
 
 ### 3. Frontend Setup
@@ -182,9 +253,13 @@ Frontend will start at: **http://localhost:5173**
 1. Navigate to the Upload page
 2. Enter company name
 3. Select department (HR, Finance, Sales, IT, etc.)
-4. Choose a file (supports .txt, .csv, .pdf, .docx)
-5. Click "Upload & Scan"
-6. View detection results and classification
+4. Enter your email address (required for access control)
+5. Choose a file:
+   - **Text files**: .txt, .csv, .pdf, .docx
+   - **Images**: .jpg, .jpeg, .png (OCR text extraction)
+6. Click "Upload & Scan"
+7. View detection results and classification
+8. **For images**: Review the extracted OCR text preview
 
 ### 2. Protect Sensitive Data
 After scanning:
@@ -217,6 +292,35 @@ After scanning:
 3. Click "Generate New" to create recommendations
 4. Filter by priority (High/Medium/Low)
 5. Review actionable security policies
+
+### 6. Image OCR Feature
+**Upload images containing sensitive data:**
+1. Select an image file (.jpg, .jpeg, .png) during upload
+2. System automatically extracts text using OCR
+3. View extracted text preview immediately after upload
+4. OCR text is processed for sensitive data detection
+5. Two text files are created:
+   - **Original**: Full OCR extracted text (accessible only to uploader)
+   - **Masked**: Sensitive data masked (accessible to others)
+
+**What gets masked in OCR text:**
+- ✅ **Masked**: Phone numbers, bank details, credit cards, SSN, passwords
+- ❌ **Preserved**: Names, email addresses, organization names
+
+### 7. File Access Control (Email-Based)
+**How it works:**
+- When you upload a file, provide your email address
+- **Your email = Original file**: Full, unmasked content
+- **Different email = Masked file**: Sensitive data redacted
+
+**Example:**
+```
+Uploader: john@company.com
+File contains: Name: John, Email: john@company.com, Phone: 555-1234
+
+Access with john@company.com → Full file (all data visible)
+Access with mary@company.com → Masked file (Phone: [MASKED-PHONE])
+```
 
 ---
 
@@ -337,6 +441,7 @@ MAX_FILE_SIZE=10485760  # 10MB
 - **Framework**: FastAPI
 - **Database**: MongoDB (Motor async driver)
 - **AI/NLP**: spaCy, HuggingFace Transformers, PyTorch
+- **OCR**: Tesseract OCR, pytesseract, Pillow
 - **File Processing**: PyPDF2, python-docx, pandas
 - **Security**: cryptography (Fernet encryption)
 - **Reports**: ReportLab, Pillow
@@ -377,11 +482,85 @@ Frontend (5173): Change port in vite.config.js
 Solution: Check CORS_ORIGINS in .env includes frontend URL
 ```
 
+### Tesseract OCR Not Found
+```
+Error: "Tesseract OCR not found"
+
+Solutions:
+1. Verify Tesseract is installed:
+   tesseract --version
+
+2. Add Tesseract to system PATH (Windows):
+   - Add C:\Program Files\Tesseract-OCR to PATH
+   - Restart terminal/IDE
+
+3. Set TESSERACT_CMD in .env:
+   TESSERACT_CMD=C:\Program Files\Tesseract-OCR\tesseract.exe
+
+4. Restart backend after configuration changes
+```
+
+### Image Upload Not Working
+```
+Solution: 
+- Ensure pytesseract is installed: pip install pytesseract
+- Verify image format is supported (.jpg, .jpeg, .png)
+- Check backend logs for OCR errors
+```
+
+### S3 Storage Issues
+```
+See AWS_S3_SETUP_GUIDE.md for complete troubleshooting
+
+Quick fixes:
+- Verify USE_S3_STORAGE=true in .env
+- Check AWS credentials are set
+- Ensure S3 buckets exist
+- Run: python test_s3_integration.py
+```
+
+---
+
+## 📚 Documentation
+
+### Main Guides
+- **[README.md](README.md)** - This file (overview and setup)
+- **[QUICK_START_S3.md](QUICK_START_S3.md)** - 5-minute S3 setup guide
+
+### AWS S3 Integration
+- **[AWS_S3_SETUP_GUIDE.md](AWS_S3_SETUP_GUIDE.md)** - Complete S3 setup with screenshots
+- **[S3_DEVELOPER_GUIDE.md](S3_DEVELOPER_GUIDE.md)** - Code examples and API reference
+- **[S3_IMPLEMENTATION_SUMMARY.md](S3_IMPLEMENTATION_SUMMARY.md)** - Architecture and design decisions
+
+### Other Documentation
+- Check `/docs` folder for feature-specific guides
+- API Docs: http://localhost:8000/docs (when backend is running)
+
+---
+
+## 🚧 Recent Updates
+
+### v2.1 - AWS S3 Integration (Latest)
+- ✅ Dual-bucket S3 storage architecture
+- ✅ Seamless local/cloud storage switching
+- ✅ Server-side encryption (AES-256)
+- ✅ Company-based file organization
+- ✅ Backward compatible with local storage
+- ✅ Comprehensive setup documentation
+
+### v2.0 - Context-Aware Intelligence
+- Enhanced AI detection with government ID support
+- Context-aware masking and classification
+- Email-based access control
+- OCR support for images
+
 ---
 
 ## 🚧 Future Enhancements
 
-- [ ] Cloud storage integration (AWS S3, Azure Blob)
+- [x] Cloud storage integration (AWS S3) ✅ **NEW!**
+- [ ] Azure Blob Storage support
+- [ ] Google Cloud Storage support
 - [ ] User authentication & role-based access
 - [ ] Real-time scanning dashboard
 - [ ] Custom detection patterns

@@ -5,6 +5,12 @@ from datetime import datetime
 from enum import Enum
 
 
+class SourceType(str, Enum):
+    """File source type enumeration."""
+    TEXT = "text"
+    IMAGE = "image"
+
+
 class Department(str, Enum):
     """Department enumeration."""
     HR = "HR"
@@ -87,6 +93,22 @@ class FileMetadata(BaseModel):
     uploader_name: Optional[str] = None
     masked_file_path: Optional[str] = None
     masked_fields: List[str] = []
+    source_type: SourceType = SourceType.TEXT
+    ocr_extracted: bool = False
+    ocr_text_preview: Optional[str] = None
+    
+    # Employee fields (NEW)
+    employee_id: Optional[str] = Field(None, description="Employee ID")
+    employee_name: Optional[str] = Field(None, description="Employee name")
+    employee_email: Optional[str] = Field(None, description="Employee email")
+    document_name: Optional[str] = Field(None, description="Document type name (e.g., Aadhaar, PAN, DL)")
+    
+    # Storage backend fields (S3 or local)
+    storage_type: Optional[str] = Field(None, description="Storage type: 'local' or 's3'")
+    original_s3_key: Optional[str] = Field(None, description="S3 key for original file")
+    masked_s3_key: Optional[str] = Field(None, description="S3 key for masked file")
+    original_bucket: Optional[str] = Field(None, description="S3 bucket for original file")
+    masked_bucket: Optional[str] = Field(None, description="S3 bucket for masked file")
 
 
 class ProtectionRequest(BaseModel):
@@ -169,3 +191,109 @@ class UploadResponse(BaseModel):
     file_id: str
     message: str
     metadata: FileMetadata
+    ocr_extracted_text: Optional[str] = None
+
+
+class DocumentTypeInfo(BaseModel):
+    """Document type classification information."""
+    type: str = Field(..., description="Document type (invoice, financial, hr, etc.)")
+    confidence: float = Field(..., description="Classification confidence score")
+    keywords: List[str] = Field(default=[], description="Matched keywords")
+    reasoning: str = Field(..., description="Classification reasoning")
+
+
+class SemanticFieldInfo(BaseModel):
+    """Semantic field detection information."""
+    name: str = Field(..., description="Field name/type")
+    value_preview: str = Field(..., description="Preview of detected value")
+    sensitivity: str = Field(..., description="Sensitivity level (low/medium/high/critical)")
+    confidence: float = Field(..., description="Detection confidence")
+    reason: str = Field(..., description="Why this field is sensitive")
+
+
+class MaskingExplanation(BaseModel):
+    """Explanation for a masked field."""
+    field: str = Field(..., description="Field name")
+    original_value: str = Field(..., description="Original value preview")
+    masked_value: str = Field(..., description="Masked representation")
+    reason: str = Field(..., description="Why this was masked")
+    sensitivity: str = Field(..., description="Sensitivity level")
+    confidence: float = Field(..., description="Confidence score")
+    position: str = Field(..., description="Position in document")
+
+
+class ContextAwareAnalysisResult(BaseModel):
+    """Result from context-aware document analysis."""
+    document_context: DocumentTypeInfo
+    detected_fields: List[SemanticFieldInfo]
+    masked_text: Optional[str] = Field(None, description="Masked document text")
+    explanations: List[MaskingExplanation] = Field(default=[], description="Masking explanations")
+    summary: Dict[str, Any] = Field(..., description="Analysis summary statistics")
+
+
+class EnhancedFileMetadata(BaseModel):
+    """File metadata with context-aware information."""
+    file_id: str
+    original_filename: str
+    company: str
+    department: Department
+    file_size: int
+    upload_date: datetime
+    classification: Optional[Classification] = None
+    is_protected: bool = False
+    scan_completed: bool = False
+    uploader_email: str
+    uploader_name: Optional[str] = None
+    masked_file_path: Optional[str] = None
+    masked_fields: List[str] = []
+    source_type: SourceType = SourceType.TEXT
+    ocr_extracted: bool = False
+    ocr_text_preview: Optional[str] = None
+    
+    # Storage backend fields (S3 or local)
+    storage_type: Optional[str] = Field(None, description="Storage type: 'local' or 's3'")
+    original_s3_key: Optional[str] = Field(None, description="S3 key for original file")
+    masked_s3_key: Optional[str] = Field(None, description="S3 key for masked file")
+    original_bucket: Optional[str] = Field(None, description="S3 bucket for original file")
+    masked_bucket: Optional[str] = Field(None, description="S3 bucket for masked file")
+    
+    # Context-aware fields
+    document_type: Optional[str] = Field(None, description="Detected document type")
+    document_type_confidence: Optional[float] = Field(None, description="Document classification confidence")
+    context_aware_processed: bool = Field(False, description="Whether context-aware engine was used")
+    semantic_fields_count: Optional[int] = Field(None, description="Number of semantic fields detected")
+    masking_explanations: List[MaskingExplanation] = Field(default=[], description="Why fields were masked")
+
+
+class UserRole(str, Enum):
+    """User role enumeration for access control."""
+    EMPLOYEE = "employee"
+    HR = "hr"
+    ADMIN = "admin"
+    AUDITOR = "auditor"
+
+
+class EmployeeAccessRequest(BaseModel):
+    """Request for employee to access their own documents."""
+    employee_id: str = Field(..., description="Employee ID")
+    employee_name: str = Field(..., description="Employee name")
+    employee_email: str = Field(..., description="Employee email")
+    file_id: str = Field(..., description="File ID to access")
+
+
+class AuthorityAccessRequest(BaseModel):
+    """Request for company authority to access employee documents."""
+    name: str = Field(..., description="Authority name")
+    email: str = Field(..., description="Authority email")
+    role: UserRole = Field(..., description="Authority role (HR/Admin/Auditor)")
+    employee_id: str = Field(..., description="Employee ID to access")
+    file_id: str = Field(..., description="File ID to access")
+
+
+class EmployeeFilesResponse(BaseModel):
+    """Response containing employee's files."""
+    employee_id: str
+    employee_name: Optional[str] = None
+    employee_email: Optional[str] = None
+    files: List[Dict[str, Any]]
+    total_count: int

@@ -1,0 +1,52 @@
+INVOICE
+
+TechSupply Co.
+123 Business Avenue
+San Francisco, CA 94102
+Phone: (415) 555-0123
+Email: billing@techsupply.com
+
+BILL TO:
+ABC Corporation
+456 Commerce Street
+New York, NY 10001
+Attn: John Smith, Procurement Manager
+
+INVOICE NUMBER: INV-2024-8734
+PURCHASE ORDER: PO-456789
+DATE: December 20, 2024
+DUE DATE: January 20, 2025
+CUSTOMER ID: CUST-ABC-001
+
+DESCRIPTION                         QTY    UNIT PRICE    AMOUNT
+----------------------------------------------------------------
+Dell Latitude 5520 Laptop            10     $1,299.00    $12,990.00
+Microsoft Office 365 License         10     $149.99      $1,499.90
+USB-C Docking Station                10     $199.00      $1,990.00
+Wireless Mouse                       10     $29.99       $299.90
+----------------------------------------------------------------
+
+SUBTOTAL:                                                $16,779.80
+TAX (8.5%):                                              $1,426.28
+SHIPPING:                                                $150.00
+----------------------------------------------------------------
+TOTAL AMOUNT DUE:                                        $18,356.08
+
+PAYMENT TERMS: Net 30 days
+PAYMENT METHODS: Wire Transfer, ACH, Check
+
+BANK DETAILS:
+Bank Name: First National Bank
+Account Number: 123456789012
+Routing Number: 021000021
+Account Name: TechSupply Co.
+
+REFERENCE NUMBER: REF-2024-XYZ789
+
+For questions regarding this invoice, please contact:
+Sarah Johnson
+Accounts Receivable
+Phone: (415) 555-0145
+Email: ar@techsupply.com
+
+Thank you for your business!

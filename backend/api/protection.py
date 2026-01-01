@@ -2,14 +2,18 @@
 from fastapi import APIRouter, HTTPException, Depends
 from fastapi.responses import Response
 from typing import Optional
+from pathlib import Path
 import logging
 
 from models.schemas import ProtectionRequest
 from storage.file_storage import file_storage
+from storage.storage_factory import storage_manager
 from storage.database import get_database
 from utils.protection import protection_manager
 from utils.file_processor import file_processor
 from motor.motor_asyncio import AsyncIOMotorDatabase
+from config import settings
+import aiofiles
 
 logger = logging.getLogger(__name__)
 
@@ -41,18 +45,42 @@ async def protect_file(
         if not file_doc:
             raise HTTPException(status_code=404, detail="File not found")
         
-        # Get file content
-        file_content = await file_storage.get_file(file_id)
+        # Get storage info
+        storage_type = file_doc.get('storage_type', 'local')
+        original_s3_key = file_doc.get('original_s3_key')
+        original_filename = file_doc.get('original_filename', '')
+        
+        # Get file content using storage manager
+        file_content = await storage_manager.get_original(file_id, original_s3_key)
         
         if not file_content:
             raise HTTPException(status_code=404, detail="File content not found")
         
-        # Get file path for text extraction
-        file_path = file_storage.get_file_path(file_id)
-        file_extension = file_path.suffix if file_path else ".txt"
-        
-        # Extract text
-        text = file_processor.extract_text(str(file_path), file_extension)
+        # For S3 storage, we need to save to temp file for text extraction
+        # For local storage, get the file path directly
+        if storage_type == 's3':
+            # Save to temp file for processing
+            file_extension = Path(original_filename).suffix
+            temp_path = Path(settings.temp_dir) / f"{file_id}{file_extension}"
+            temp_path.parent.mkdir(parents=True, exist_ok=True)
+            
+            async with aiofiles.open(temp_path, 'wb') as f:
+                await f.write(file_content)
+            
+            # Extract text from temp file
+            text = file_processor.extract_text(str(temp_path), file_extension)
+            
+            # Clean up temp file
+            temp_path.unlink(missing_ok=True)
+        else:
+            # Local storage: get file path
+            file_path = file_storage.get_file_path(file_id)
+            if not file_path:
+                raise HTTPException(status_code=404, detail="File path not found")
+            
+            file_extension = file_path.suffix
+            # Extract text
+            text = file_processor.extract_text(str(file_path), file_extension)
         
         if not text:
             raise HTTPException(status_code=400, detail="Could not extract text from file")

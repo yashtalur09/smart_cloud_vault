@@ -1,0 +1,43 @@
+GOVERNMENT OF INDIA
+UNIQUE IDENTIFICATION AUTHORITY OF INDIA
+
+AADHAAR
+Aadhaar - Aam Aadmi ka Adhikaar
+
+Name: Rajesh Kumar Singh
+Date of Birth: 15/08/1985
+Gender: Male
+
+Aadhaar Number: 2345 6789 0123
+
+Address:
+House No. 456, Sector 12
+Ramakrishna Puram
+New Delhi - 110022
+India
+
+Father's Name: Suresh Kumar Singh
+
+VID: 1234567890123456
+
+QR Code Reference: AKS2345678901230815
+
+Date of Issue: 12/01/2020
+
+-------------------------------------------
+This is a digitally signed Aadhaar Card
+Issued by UIDAI under Government of India
+Help Desk: 1947
+Website: uidai.gov.in
+-------------------------------------------
+
+To verify, visit: https://resident.uidai.gov.in/verify
+Download mAadhaar app for digital version
+
+Important: Aadhaar number should be kept confidential
+Never share your Aadhaar with unauthorized persons
+
+-------------------------------------------
+Government-issued unique identification
+Valid as proof of identity and address
+-------------------------------------------

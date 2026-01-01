@@ -7,6 +7,7 @@ import logging
 from config import settings
 from storage.database import Database
 from ai_engine.detector import detector
+from ai_engine.context_aware_engine import context_engine
 
 # Import routers
 from api import upload, protection, analysis, recommendations, reports, download
@@ -33,11 +34,20 @@ async def lifespan(app: FastAPI):
     logger.info("Loading AI models (this may take a few minutes)...")
     try:
         detector.initialize()
-        logger.info("AI models loaded successfully")
+        logger.info("Legacy detector AI models loaded successfully")
     except Exception as e:
-        logger.warning(f"AI model loading failed: {e}")
-        logger.warning("Application will continue with regex-only detection")
+        logger.warning(f"Legacy AI model loading failed: {e}")
+        logger.warning("Legacy detector will use regex-only detection")
         detector.ai_detector.models_loaded = False
+    
+    # Initialize context-aware engine
+    logger.info("Initializing context-aware intelligence engine...")
+    try:
+        context_engine.initialize()
+        logger.info("Context-aware engine initialized successfully")
+    except Exception as e:
+        logger.warning(f"Context-aware engine initialization failed: {e}")
+        logger.warning("Will fall back to pattern-based detection only")
 
     
     yield
@@ -50,8 +60,8 @@ async def lifespan(app: FastAPI):
 # Create FastAPI app
 app = FastAPI(
     title="SmartCloud Vault API",
-    description="Sensitive Data Detection and Management System",
-    version="1.0.0",
+    description="Sensitive Data Detection and Management System with Context-Aware Intelligence",
+    version="2.0.0",
     lifespan=lifespan
 )
 
@@ -78,7 +88,14 @@ async def root():
     """Root endpoint."""
     return {
         "message": "Welcome to SmartCloud Vault API",
-        "version": "1.0.0",
+        "version": "2.0.0",
+        "features": [
+            "Context-aware document classification",
+            "Semantic field detection",
+            "Intelligent masking with explainability",
+            "OCR processing",
+            "Email-based access control"
+        ],
         "docs": "/docs"
     }
 
@@ -89,7 +106,8 @@ async def health_check():
     return {
         "status": "healthy",
         "database": "connected" if Database.db is not None else "disconnected",
-        "ai_models": "loaded" if detector.ai_detector.models_loaded else "not loaded"
+        "legacy_ai_models": "loaded" if detector.ai_detector.models_loaded else "not loaded",
+        "context_aware_engine": "initialized" if context_engine.initialized else "not initialized"
     }
 
 

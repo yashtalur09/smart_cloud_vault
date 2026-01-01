@@ -1,0 +1,47 @@
+RECEIPT
+
+Target Store #2147
+789 Shopping Plaza Drive
+Los Angeles, CA 90015
+Phone: (213) 555-0190
+
+Transaction ID: 7849562301
+Date: 12/25/2024
+Time: 2:45 PM
+Cashier: Maria Garcia
+
+ITEMS PURCHASED:
+----------------------------------------------------------------
+Grocery Items
+  - Organic Bananas (2 lbs)          $3.98
+  - Whole Milk (1 gallon)            $4.99
+  - Bread - Wheat                    $3.49
+  - Fresh Chicken Breast (3 lbs)     $14.97
+  
+Household
+  - Laundry Detergent                $12.99
+  - Paper Towels (6 pack)            $15.99
+  
+Electronics
+  - USB Flash Drive 64GB             $19.99
+----------------------------------------------------------------
+
+SUBTOTAL:                            $76.40
+TAX (9.5%):                          $7.26
+----------------------------------------------------------------
+TOTAL:                               $83.66
+
+PAYMENT METHOD: Visa ending in 4532
+Card Type: Credit
+Authorization Code: 892456
+
+CHANGE DUE:                          $0.00
+
+Thank you for shopping at Target!
+You saved $8.45 today with your RedCard
+
+Store Hours: Mon-Sat 8AM-10PM, Sun 9AM-9PM
+Return Policy: Most items can be returned within 90 days with receipt
+
+Visit us online at target.com
+Receipt #: R-2024-7849562301

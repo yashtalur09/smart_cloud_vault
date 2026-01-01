@@ -4,32 +4,50 @@ import { uploadFile, protectFile, downloadProtectedFile } from '../services/api'
 
 const Upload = () => {
     const [file, setFile] = useState(null);
-    const [company, setCompany] = useState('');
-    const [department, setDepartment] = useState('HR');
-    const [uploaderEmail, setUploaderEmail] = useState('');
-    const [uploaderName, setUploaderName] = useState('');
+    const [employeeId, setEmployeeId] = useState('');
+    const [employeeName, setEmployeeName] = useState('');
+    const [employeeEmail, setEmployeeEmail] = useState('');
+    const [documentName, setDocumentName] = useState('');
     const [uploading, setUploading] = useState(false);
     const [uploadResult, setUploadResult] = useState(null);
     const [protecting, setProtecting] = useState(false);
+    const [ocrText, setOcrText] = useState(null);
 
     const handleFileChange = (e) => {
         setFile(e.target.files[0]);
         setUploadResult(null);
+        setOcrText(null);
     };
 
     const handleUpload = async (e) => {
         e.preventDefault();
 
-        if (!file || !company || !uploaderEmail) {
-            alert('Please select a file, enter company name and your email');
+        if (!file || !employeeId || !employeeName || !employeeEmail) {
+            alert('Please fill in all required fields (employee ID, employee name, employee email)');
             return;
         }
 
         setUploading(true);
 
         try {
-            const result = await uploadFile(file, company, department, uploaderEmail, uploaderName);
+            const result = await uploadFile(
+                file, 
+                'General',  // Default company
+                'HR',  // Default department
+                employeeEmail,  // Use employee email as uploader email
+                employeeName,  // Use employee name as uploader name
+                employeeId, 
+                employeeName, 
+                employeeEmail, 
+                documentName
+            );
             setUploadResult(result);
+            
+            // Set OCR text if available (for image uploads)
+            if (result.ocr_extracted_text) {
+                setOcrText(result.ocr_extracted_text);
+            }
+            
             setFile(null);
             // Reset form
             document.getElementById('file-input').value = '';
@@ -79,70 +97,69 @@ const Upload = () => {
             <div className="card max-w-3xl mx-auto">
                 <form onSubmit={handleUpload}>
                     <div className="space-y-6">
-                        {/* Company Input */}
+
+                        {/* Employee ID Input */}
                         <div>
                             <label className="block text-sm font-medium text-secondary-300 mb-2">
-                                Company Name
+                                Employee ID <span className="text-red-400">*</span>
                             </label>
                             <input
                                 type="text"
-                                value={company}
-                                onChange={(e) => setCompany(e.target.value)}
+                                value={employeeId}
+                                onChange={(e) => setEmployeeId(e.target.value)}
                                 className="input-field"
-                                placeholder="Enter company name"
-                                required
-                            />
-                        </div>
-
-                        {/* Department Select */}
-                        <div>
-                            <label className="block text-sm font-medium text-secondary-300 mb-2">
-                                Department
-                            </label>
-                            <select
-                                value={department}
-                                onChange={(e) => setDepartment(e.target.value)}
-                                className="input-field"
-                            >
-                                <option value="HR">HR</option>
-                                <option value="Finance">Finance</option>
-                                <option value="Sales">Sales</option>
-                                <option value="IT">IT</option>
-                                <option value="Legal">Legal</option>
-                                <option value="Marketing">Marketing</option>
-                                <option value="Operations">Operations</option>
-                            </select>
-                        </div>
-
-                        {/* Uploader Email Input */}
-                        <div>
-                            <label className="block text-sm font-medium text-secondary-300 mb-2">
-                                Your Email <span className="text-red-400">*</span>
-                            </label>
-                            <input
-                                type="email"
-                                value={uploaderEmail}
-                                onChange={(e) => setUploaderEmail(e.target.value)}
-                                className="input-field"
-                                placeholder="your.email@company.com"
+                                placeholder="e.g., EMP12345"
                                 required
                             />
                             <p className="text-xs text-secondary-500 mt-1">
-                                Required for file access control
+                                Used for organizing files in cloud storage
                             </p>
                         </div>
 
-                        {/* Uploader Name Input */}
+                        {/* Employee Name Input */}
                         <div>
                             <label className="block text-sm font-medium text-secondary-300 mb-2">
-                                Your Name (Optional)
+                                Employee Name <span className="text-red-400">*</span>
                             </label>
                             <input
                                 type="text"
-                                value={uploaderName}
-                                onChange={(e) => setUploaderName(e.target.value)}
+                                value={employeeName}
+                                onChange={(e) => setEmployeeName(e.target.value)}
                                 className="input-field"
-                                placeholder="Your full name"
+                                placeholder="Employee's full name"
+                                required
+                            />
+                        </div>
+
+                        {/* Employee Email Input */}
+                        <div>
+                            <label className="block text-sm font-medium text-secondary-300 mb-2">
+                                Employee Email <span className="text-red-400">*</span>
+                            </label>
+                            <input
+                                type="email"
+                                value={employeeEmail}
+                                onChange={(e) => setEmployeeEmail(e.target.value)}
+                                className="input-field"
+                                placeholder="employee@company.com"
+                                required
+                            />
+                            <p className="text-xs text-secondary-500 mt-1">
+                                Required for employee file access
+                            </p>
+                        </div>
+
+                        {/* Document Name Input */}
+                        <div>
+                            <label className="block text-sm font-medium text-secondary-300 mb-2">
+                                Document Type (Optional)
+                            </label>
+                            <input
+                                type="text"
+                                value={documentName}
+                                onChange={(e) => setDocumentName(e.target.value)}
+                                className="input-field"
+                                placeholder="e.g., Aadhaar, PAN Card, Passport"
                             />
                         </div>
 
@@ -157,7 +174,7 @@ const Upload = () => {
                                     type="file"
                                     onChange={handleFileChange}
                                     className="input-field cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary-600 file:text-white hover:file:bg-primary-700"
-                                    accept=".txt,.csv,.pdf,.docx"
+                                    accept=".txt,.csv,.pdf,.docx,.jpg,.jpeg,.png"
                                 />
                             </div>
                             {file && (
@@ -171,7 +188,7 @@ const Upload = () => {
                         {/* Submit Button */}
                         <button
                             type="submit"
-                            disabled={uploading || !file || !company || !uploaderEmail}
+                            disabled={uploading || !file || !employeeId || !employeeName || !employeeEmail}
                             className="w-full btn-primary flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             <UploadIcon className="h-5 w-5" />
@@ -259,6 +276,19 @@ const Upload = () => {
                             </div>
                         </div>
                     </div>
+                    
+                    {/* OCR Text Preview (for images) */}
+                    {ocrText && (
+                        <div className="mt-6 border-t border-secondary-700 pt-6">
+                            <h4 className="text-lg font-semibold text-white mb-3">Extracted Text (OCR)</h4>
+                            <div className="bg-secondary-700/50 rounded-lg p-4 max-h-64 overflow-y-auto">
+                                <pre className="text-sm text-secondary-300 whitespace-pre-wrap font-mono">{ocrText}</pre>
+                            </div>
+                            <p className="text-xs text-secondary-500 mt-2">
+                                This text was extracted from your uploaded image using OCR technology.
+                            </p>
+                        </div>
+                    )}
                 </div>
             )}
 

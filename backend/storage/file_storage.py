@@ -68,6 +68,9 @@ class FileStorage:
         """
         Retrieve file content by file ID.
         
+        For image uploads that have been OCR-processed, this returns the .txt file
+        (the OCR-extracted text), not the original image.
+        
         Args:
             file_id: File identifier
         
@@ -81,7 +84,13 @@ class FileStorage:
             logger.warning(f"File not found: {file_id}")
             return None
         
-        file_path = files[0]
+        # CRITICAL: For OCR-processed images, prioritize .txt file over image files
+        # This ensures the "original" file for image uploads is the OCR text, not binary image data
+        txt_file = self.upload_dir / f"{file_id}.txt"
+        if txt_file.exists():
+            file_path = txt_file
+        else:
+            file_path = files[0]
         
         async with aiofiles.open(file_path, 'rb') as f:
             content = await f.read()
@@ -169,6 +178,48 @@ class FileStorage:
             content = await f.read()
         
         return content
+    
+    async def save_ocr_text_file(self, file_id: str, text_content: bytes) -> str:
+        """
+        Save OCR extracted text as a .txt file (replaces image as "original" file).
+        
+        Args:
+            file_id: File ID
+            text_content: OCR extracted text as bytes
+        
+        Returns:
+            str: Path to saved text file
+        """
+        # Save as .txt file in uploads directory
+        text_filename = f"{file_id}.txt"
+        text_path = self.upload_dir / text_filename
+        
+        async with aiofiles.open(text_path, 'wb') as f:
+            await f.write(text_content)
+        
+        logger.info(f"Saved OCR text file: {text_filename}")
+        
+        return str(text_path)
+    
+    def delete_image_file(self, file_id: str, extension: str) -> bool:
+        """
+        Delete original image file after OCR processing.
+        
+        Args:
+            file_id: File identifier
+            extension: Image file extension (e.g., '.jpg', '.png')
+        
+        Returns:
+            bool: True if file was deleted, False otherwise
+        """
+        image_path = self.upload_dir / f"{file_id}{extension}"
+        
+        if image_path.exists():
+            image_path.unlink()
+            logger.info(f"Deleted original image file: {image_path}")
+            return True
+        
+        return False
     
     def delete_file(self, file_id: str) -> bool:
         """Delete file by ID."""
