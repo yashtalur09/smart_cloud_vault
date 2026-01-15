@@ -378,14 +378,14 @@ async def list_employee_files(
     List all files for a specific employee.
     
     Args:
-        employee_id: Employee ID
+        employee_id: Employee ID (case-insensitive)
     
     Returns:
         List of files belonging to the employee
     """
     try:
-        # Find all files for this employee
-        cursor = db.files.find({"employee_id": employee_id})
+        # Find all files for this employee (case-insensitive search)
+        cursor = db.files.find({"employee_id": {"$regex": f"^{employee_id}$", "$options": "i"}})
         files = await cursor.to_list(length=None)
         
         if not files:

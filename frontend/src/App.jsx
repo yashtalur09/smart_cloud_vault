@@ -1,12 +1,10 @@
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import { Shield, BarChart3, FileText, AlertTriangle, Download as DownloadIcon } from 'lucide-react';
+import { Shield, BarChart3, FileText, Download as DownloadIcon } from 'lucide-react';
 import './index.css';
 
 // Pages
 import Upload from './pages/Upload';
 import Dashboard from './pages/Dashboard';
-import Recommendations from './pages/Recommendations';
-import Download from './pages/Download';
 import DownloadRoleBased from './pages/DownloadRoleBased';
 
 function App() {
@@ -33,18 +31,11 @@ function App() {
                   <span>Upload</span>
                 </Link>
                 <Link
-                  to="/download"
-                  className="flex items-center space-x-2 px-4 py-2 rounded-lg text-secondary-300 hover:text-white hover:bg-secondary-700 transition-all"
-                >
-                  <DownloadIcon className="h-5 w-5" />
-                  <span>Download (Legacy)</span>
-                </Link>
-                <Link
                   to="/download-role"
                   className="flex items-center space-x-2 px-4 py-2 rounded-lg text-secondary-300 hover:text-white hover:bg-secondary-700 transition-all"
                 >
                   <DownloadIcon className="h-5 w-5" />
-                  <span>Download (Role-Based)</span>
+                  <span>Download</span>
                 </Link>
                 <Link
                   to="/dashboard"
@@ -52,13 +43,6 @@ function App() {
                 >
                   <BarChart3 className="h-5 w-5" />
                   <span>Dashboard</span>
-                </Link>
-                <Link
-                  to="/recommendations"
-                  className="flex items-center space-x-2 px-4 py-2 rounded-lg text-secondary-300 hover:text-white hover:bg-secondary-700 transition-all"
-                >
-                  <AlertTriangle className="h-5 w-5" />
-                  <span>Recommendations</span>
                 </Link>
               </div>
             </div>
@@ -69,10 +53,8 @@ function App() {
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <Routes>
             <Route path="/" element={<Upload />} />
-            <Route path="/download" element={<Download />} />
             <Route path="/download-role" element={<DownloadRoleBased />} />
             <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/recommendations" element={<Recommendations />} />
           </Routes>
         </main>
 
